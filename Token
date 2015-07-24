@@ -1,0 +1,70 @@
+package compiler;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+/**
+ *
+ * @author rick
+ */
+public class Token {
+
+    public TokenType type;
+    public String data;
+    private Token next;
+
+    public Token(TokenType type, String data) {
+        this.type = type;
+        this.data = data;
+        this.next=null;
+    }
+    
+
+    @Override
+    public String toString() {
+        return String.format("(%s %s)", type.name(), data);
+    }
+    
+    public String getName(){
+        return type.name();
+    }
+    
+    public String getData(){
+        return data;
+    }
+
+    public static enum TokenType {
+
+        // Token types cannot have underscores
+        //NUMBER("-?[0-9]+"), 
+        WHITESPACE("[ \t\f\r\n]+"),
+        Comma(","),
+        DocStart("<"),
+        DocEnd(">"),
+        WordStart("\\["),
+        WordEnd("\\]"),
+        PigSentenceStart(":"),
+        PigSentenceEnd(";"),
+        PigConst("[[a-zA-z && [^aeiou]]]an"),
+        PigVowel("[a|e|i|o|u]"),
+        Free("[\\?|\\!|\\']");
+         // PigLetter("[a-zA-Z]+"),
+
+        public final String pattern;
+
+        private TokenType(String pattern) {
+            this.pattern = pattern;
+        }
+    }
+    
+    public Token getNext(){
+        return this.next;
+    }
+    
+    public void setNext(Token token){
+        this.next=token;
+    }
+
+}

@@ -1,0 +1,77 @@
+
+
+Compiler - Translation 
+Victor Clemetson
+Ricardo Hyde
+Dewan Barnes
+Fenise Hamilton
+
+
+Introduction
+ The project takes two data files- *.txt and *.pyg; that are non-compatible file formats and perform backward and forward translation of them both using a Compiler Migration Tool. The language being used to undertake and create the compiler is Java.
+The file formants .txt and .pyg stand for English and Pyg-Latin respectively.
+Pig-Latin Grammar
+Every consonants is companied with “an”. Vowels remain as is.
+Lesser than sign - < - starts the document
+Greater than sign - >- ends the document
+Colon - : - starts a sentence 
+Semi- colon - ; - ends a sentence 
+Left square bracket - [ - starts a word
+Right square bracket - ] – ends a word 
+Coma - , - separates consonants with “an” or vowels 
+Spaces do not exist in the pig-Latin language.
+
+Sample Translation
+Pig-Latin - <:[Fan,a,nan][i,san][o,nan];:[Tan,han,i,san][wan,o,ran,kan,san];>
+English - Fan is on. This is work.
+
+
+
+The Translation Process
+The compiler accepts the file (*.pyg or *.txt); it first encounters the lexical analyzer. 
+The lexical analyzer breaks the file into token streams using regular expressions (figure 1). 
+These tokens are used to create a liked list.  The head of the list is then passed to the Parser;
+which then performs top-down descent parsing. This algorithm partially processes a given production 
+by recursively calling functions. Each production consists of either a terminal or a non-terminal function.
+Terminal function are expanded and non terminal functions are checked again the current node in the Linked list. 
+This method is known as top-down parsing which parses the exact same way as the parse tree made from a context 
+free grammar (CFG). 
+It does this by traversing the linked list and uses the lookahead variable to determine whether to move or 
+to call another production. While the algorithm is processing the linked list it builds a proof tree, 
+parse tree and AST tree. The AST tree is what the optimizer would use to remove ambiguities such as double
+matched non terminals in order for the code generator to translate it to English. This same process is repeated 
+for the English to Pyg-Latin.
+
+
+
+
+
+
+CFG- PYG to English
+E->  <P>
+P-> S| SP
+S-> :W;| :W;S
+W-> [G]| [G]W
+G-> C,G| V,G| C|V
+C-> Ban|Can| Dan|Fan|Gan|Han|Jan|Kan|Lan|Man| Nan|Pan| Qan| Ran| San| Tan|Van| Wan| Xan| Yan|Zan
+V-> A|E|I|O|U
+Key:
+E- enter, S-sentence, W-word, G-grammar, C- consonant , V-vowel, P- paragraph 
+
+
+
+
+CFG – English to PYG
+E-> S|SE
+S-> Wx|W.|WS
+W-> G|GW
+G->CG| VG|C|V
+C-> B| C|  F|G|H|J| K| L|M|N|P |Q |R |S |T|V|W |X|Y|Z
+V-> A|E|I|O|U
+
+Key:
+E- enter, S-sentence, W-word, G-grammar, C- consonant , V-vowel, P- paragraph 
+
+
+
+

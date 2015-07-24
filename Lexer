@@ -1,0 +1,133 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package compiler;
+
+import java.util.*;
+import compiler.Token.TokenType;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+/**
+ *
+ * @author rick
+ */
+public class Lexer {
+
+    private static Token next;
+    private static Token head;
+    private static Token prev;
+    private static int err;
+
+    public Lexer() {
+        head = null;
+        next = null;
+        prev =null;
+        err=0;
+        
+    }
+
+    public static ArrayList<Token> lex(String input) {//removed static
+        // The tokens to return
+        ArrayList<Token> tokens = new ArrayList<Token>();
+
+        // Lexer logic begins here
+        StringBuffer tokenPatternsBuffer = new StringBuffer();
+        for (TokenType tokenType : TokenType.values()) {
+            tokenPatternsBuffer.append(String.format("|(?<%s>%s)", tokenType.name(), tokenType.pattern));
+        }
+        Pattern tokenPatterns = Pattern.compile(new String(tokenPatternsBuffer.substring(1)));
+
+        // Begin matching tokens
+        Matcher matcher = tokenPatterns.matcher(input);
+        while (matcher.find()) {
+            if (matcher.group(TokenType.WHITESPACE.name()) != null) {
+                continue;
+            } else if (matcher.group(TokenType.Comma.name()) != null) {
+                tokens.add(new Token(TokenType.Comma, matcher.group(TokenType.Comma.name())));
+                createLink(new Token(TokenType.Comma, matcher.group(TokenType.Comma.name())));
+                continue;
+            } else if (matcher.group(TokenType.PigConst.name()) != null) {
+                tokens.add(new Token(TokenType.PigConst, matcher.group(TokenType.PigConst.name())));
+                createLink(new Token(TokenType.PigConst, matcher.group(TokenType.PigConst.name())));
+                continue;
+            } else if (matcher.group(TokenType.PigVowel.name()) != null) {
+                tokens.add(new Token(TokenType.PigVowel, matcher.group(TokenType.PigVowel.name())));
+                createLink(new Token(TokenType.PigVowel, matcher.group(TokenType.PigVowel.name())));
+                continue;
+
+            } else if (matcher.group(TokenType.DocStart.name()) != null) {
+                tokens.add(new Token(TokenType.DocStart, matcher.group(TokenType.DocStart.name())));
+                createLink(new Token(TokenType.DocStart, matcher.group(TokenType.DocStart.name())));
+                continue;
+            } else if (matcher.group(TokenType.DocEnd.name()) != null) {
+                tokens.add(new Token(TokenType.DocEnd, matcher.group(TokenType.DocEnd.name())));
+                createLink(new Token(TokenType.DocEnd, matcher.group(TokenType.DocEnd.name())));
+                continue;
+            } else if (matcher.group(TokenType.WordStart.name()) != null) {
+                tokens.add(new Token(TokenType.WordStart, matcher.group(TokenType.WordStart.name())));
+                createLink(new Token(TokenType.WordStart, matcher.group(TokenType.WordStart.name())));
+                continue;
+            } else if (matcher.group(TokenType.WordEnd.name()) != null) {
+                tokens.add(new Token(TokenType.WordEnd, matcher.group(TokenType.WordEnd.name())));
+                createLink(new Token(TokenType.WordEnd, matcher.group(TokenType.WordEnd.name())));
+                continue;
+            } else if (matcher.group(TokenType.PigSentenceEnd.name()) != null) {
+                tokens.add(new Token(TokenType.PigSentenceEnd, matcher.group(TokenType.PigSentenceEnd.name())));
+                createLink(new Token(TokenType.PigSentenceEnd, matcher.group(TokenType.PigSentenceEnd.name())));
+                continue;
+            }else if (matcher.group(TokenType. PigSentenceStart.name()) != null) {
+                tokens.add(new Token(TokenType. PigSentenceStart, matcher.group(TokenType. PigSentenceStart.name())));
+                createLink(new Token(TokenType. PigSentenceStart, matcher.group(TokenType. PigSentenceStart.name())));
+                continue;
+            }else if (matcher.group(TokenType. Free.name()) != null) {
+                setErr(1);
+               System.out.println("Error");
+//                tokens.add(new Token(TokenType. Free, matcher.group(TokenType. Free.name())));
+////                createLink(new Token(TokenType. Free, matcher.group(TokenType. Free.name())));
+       
+                break;
+                }
+
+        }
+
+        return tokens;
+    }
+
+    public static void createLink(Token curr) {
+       // System.out.println("\ncreateLink output: ");
+        if (curr.type == Token.TokenType.DocStart && head == null) {
+            head = curr;
+        //    System.out.println(head);
+        } else if (curr.type != Token.TokenType.DocStart) {
+            if (head.getNext() == null) {                
+                head.setNext(curr);
+                prev=curr;
+                //System.out.println(head.getNext());
+         //       System.out.println(prev);
+            } else{        
+          //      System.out.println("current" + curr);
+                next = prev;
+          //      System.out.println(prev);
+                prev.setNext(curr);
+           //     System.out.println(prev.getNext());
+                prev=curr;
+            }
+        }
+    }
+
+    public static Token getHead() {
+        return head;
+    }
+    
+    public int getErr(){
+        return err;
+    }
+    
+    public static void setErr(int e){
+        err=e;
+    }
+
+}

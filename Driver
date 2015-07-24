@@ -1,0 +1,137 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package compiler;
+
+import java.util.*;
+import java.net.*;
+import java.io.*;
+//import compiler.*;
+import parser.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+/**
+ *
+ * @author rick
+ */
+public class Driver {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+
+        try {
+            Lexer lexer = new Lexer();
+            EnglishLex englex = new EnglishLex();
+
+            int err = lexer.getErr();
+            Parser parser = new Parser();
+            EnglishParser Eparse = new EnglishParser();
+
+            ArrayList<Token> tokenStream;
+            ArrayList<EnglishToken> EtokenStream;
+
+            Token head = null;
+            EnglishToken Ehead = null;
+
+            String input = new String(Files.readAllBytes(Paths.get("/home/dewan/file3.pyg")));
+            //  String Einput = new String(Files.readAllBytes(Paths.get("/home/rick/file.eng")));
+            String Einput = new String(Files.readAllBytes(Paths.get("/home/dewan/file.eng")));
+            // Create tokens and print them
+
+            if (err != 1) {
+                String filename = "/home/dewan/Lex.txt";
+                FileWriter fw = new FileWriter(filename);
+                Writer tofile = new BufferedWriter(fw);
+                //String Efilename = "/home/rick/ELex.txt";
+                String Efilename = "/home/dewan/ELex.txt";
+                FileWriter Efw = new FileWriter(Efilename);
+                Writer Etofile = new BufferedWriter(Efw);
+
+                tokenStream = lexer.lex(input);
+                head = lexer.getHead();
+                int s = tokenStream.size();
+                EtokenStream = englex.Elex(Einput);
+                Ehead = englex.getHeadE();
+                int E = EtokenStream.size();
+
+                for (int x = 0; x < E; x++) {
+                    Etofile.write(EtokenStream.get(x).Etype + " " + EtokenStream.get(x).Edata + "\n");
+                }
+                Etofile.close();
+
+                System.out.println("\nSuccessfully written to file\n");
+
+//                
+                for (Token token : tokenStream) {
+                    System.out.println("Arraylist: " + token);
+                }
+
+//                Token t;
+//                t = head;
+//                Token temp;
+//                System.out.println("\nprinting...linklist");
+//
+//                do {
+//                    System.out.println("Linked List: " + t);
+//                    temp = t.getNext();
+//                    t = temp;
+//                } while (t != null);
+
+                Token t;
+                t = head;
+                Token temp;
+                System.out.println("\nprinting...linklist");
+
+                do {
+                    System.out.println("Linked List: " + t);
+                    temp = t.getNext();
+                    t = temp;
+                } while (t.getNext() != null);
+
+                if (head != null) {
+
+                    if (parser.parse(head)) {
+                        System.out.println("Parse Complete - Grammar Consistent");
+                        String proofTree = Parser.getProofTree();
+                        String parseTree = Parser.getParseTree();
+                        String ASTree = Parser.getASTree();
+                        System.out.println("Proof Tree: "+proofTree);
+                        System.out.println("Parse Tree: "+parseTree);
+                        System.out.println("AST tree: "+ASTree);
+                        
+                    } else {
+                        System.out.println("Compiler Panic!");
+                    }
+                }
+
+            } else {
+                System.out.println("A error occured");
+            }
+//            
+//                if (Ehead != null) { 
+//                    if (EnglishParser.Eparse(Ehead)) {
+//                            System.out.println("EParse Complete - Grammar Consistent");
+//                            String EpTree = EnglishParser.EgetPTree();
+//                            System.out.println(EpTree);
+//                        } else {
+//                            System.out.println("Compiler Panic!");
+//                        }
+//                }
+//                else{
+//                    System.out.println("A error occured");
+//                     }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+}

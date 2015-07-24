@@ -1,0 +1,341 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package parser;
+
+import compiler.Token;
+import java.util.*;
+
+/**
+ *
+ * @author dewan
+ */
+public class Parser {
+
+    private static Token curr;
+    private static Token prev;
+    private static Token tmp;
+    private static Token lookahead = null;
+    private static int c = 1;
+    private static int v = 1;
+    private static StringBuffer proofTree = new StringBuffer();
+    private static StringBuffer parseTree = new StringBuffer();
+    private static StringBuffer asTree = new StringBuffer();
+
+    // add elements to the array list
+    public static Boolean parse(Token headOfList) {
+        //traverse the curr stream
+        System.out.println("Init Parser @: " + headOfList);
+        setCurr(headOfList);
+        setPrev(curr);
+        return start();
+    }
+
+    public static Boolean start() {
+        return docStart() && paragraph() && docEnd();
+
+    }
+
+    public static Boolean paragraph() {
+        return sentence()
+                || sentence() && paragraph();
+
+    }
+
+    public static Boolean sentence() {
+        return sentenceStart() && word() && sentenceEnd();
+    }
+
+    public static Boolean word() {
+        return wordStart() && grammar() && wordEnd();
+    }
+
+    public static boolean grammar() {
+        return consonant() && comma() && grammar()
+                || vowel() && comma() && grammar()
+                || consonant()
+                || vowel();
+
+    }
+
+    public static boolean consonant() {
+        System.out.println("consonant call count: " + c++);
+        String value = curr.data.toLowerCase();
+        ArrayList<String> cl = new ArrayList<>();
+
+        cl.add("ban");
+        cl.add("can");
+        cl.add("dan");
+        cl.add("fan");
+        cl.add("gan");
+        cl.add("han");
+        cl.add("jan");
+        cl.add("kan");
+        cl.add("lan");
+        cl.add("man");
+        cl.add("nan");
+        cl.add("pan");
+        cl.add("qan");
+        cl.add("ran");
+        cl.add("san");
+        cl.add("tan");
+        cl.add("van");
+        cl.add("wan");
+        cl.add("xan");
+        cl.add("yan");
+        cl.add("zan");
+
+        for (String cmatch : cl) {
+            if (cmatch.equals(value)) {
+                System.out.println("MATCHED" + curr);
+                buildAsTree(curr);
+                buildParseTree(curr);
+                buildProofTree(curr,true);
+                move();
+                return true;
+
+            }
+        }
+        buildProofTree(curr,false);
+        setCurr(curr);
+        System.out.println("consonant Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static boolean vowel() {
+        System.out.println("vowel call count: " + v++);
+        String value = curr.data.toLowerCase();
+        ArrayList<String> vowel = new ArrayList<>();
+
+        vowel.add("a");
+        vowel.add("e");
+        vowel.add("i");
+        vowel.add("o");
+        vowel.add("u");
+
+        for (String cmatch : vowel) {
+            if (cmatch.equals(value)) {
+                buildAsTree(curr);
+                buildParseTree(curr);
+                buildProofTree(curr,true);
+                System.out.println("MATCHED" + curr);
+                move();
+                return true;
+            }
+        }
+        buildProofTree(curr,false);
+        setCurr(curr);
+        System.out.println("vowel Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static Boolean docStart() {
+
+        if (curr.type == Token.TokenType.DocStart) {
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            System.out.println("MATCHED" + curr);
+            move();
+
+            return true;
+        } else {
+            buildProofTree(curr,false);
+            setCurr(prev);
+        }
+        System.out.println("start Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static Boolean docEnd() {
+        if (curr.type == Token.TokenType.DocEnd) {
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            System.out.println("MATCHED" + curr);
+//            tmp = curr.getNext();
+//            setPrev(curr);
+//            setCurr(tmp);
+            return true;
+        } else {
+            buildProofTree(curr,false);
+            setCurr(curr);
+        }
+        System.out.println("DocEnd Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static Boolean wordStart() {
+
+        if (curr.type == Token.TokenType.WordStart) {
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            System.out.println("MATCHED" + curr);
+            move();
+            return true;
+        } else {
+            buildProofTree(curr,false);
+            setCurr(curr);
+        }
+        System.out.println("Wordstart Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static Boolean wordEnd() {
+        if (curr.type == Token.TokenType.WordEnd && lookahead.type != Token.TokenType.WordStart) {
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            System.out.println("MATCHED" + curr);
+            move();
+
+            return true;
+        } else if (curr.type == Token.TokenType.WordEnd && lookahead.type == Token.TokenType.WordStart) {
+            System.out.println("MATCHED" + curr);
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            move();
+            return wordStart() && grammar() && wordEnd();// && word();
+        }
+        buildProofTree(curr,false);
+        System.out.println("wordEnd Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static Boolean comma() {
+        if (curr.type == Token.TokenType.Comma) {
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            System.out.println("MATCHED" + curr);
+            move();
+            return true;
+        } else {
+            buildProofTree(curr,false);
+            setCurr(prev);
+        }
+        System.out.println("comma Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static Boolean sentenceStart() {
+        if (curr.type == Token.TokenType.PigSentenceStart) {
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            System.out.println("MATCHED" + curr);
+            move();
+            return true;
+        } else {
+            setCurr(curr);
+        }
+        buildProofTree(curr,false);
+        System.out.println("Sentence Start Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static Boolean sentenceEnd() {
+        if (curr.type == Token.TokenType.PigSentenceEnd
+                && lookahead.type != Token.TokenType.PigSentenceStart) {
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            System.out.println("MATCHED" + curr);
+            move();
+            return true;
+        } else if (curr.type == Token.TokenType.PigSentenceEnd
+                && lookahead.type == Token.TokenType.PigSentenceStart) {
+            buildAsTree(curr);
+            buildParseTree(curr);
+            buildProofTree(curr,true);
+            System.out.println("MATCHED" + curr);
+            move();
+            return sentenceStart() && word() && sentenceEnd();// && sentence();
+        }
+        buildProofTree(curr,false);
+        System.out.println("Sentence End Parse error @: " + curr.data);
+        return false;
+    }
+
+    public static void setCurr(Token t) {
+        curr = t;
+    }
+
+    public static Token getCurr() {
+        return curr;
+    }
+
+    public static Token getPrev() {
+        return prev;
+    }
+
+    public static void setPrev(Token t) {
+        prev = t;
+    }
+
+    public static Token getLookahead() {
+        return lookahead;
+    }
+
+    public static void setLookahead(Token token) {
+        lookahead = token;
+    }
+
+    private static void buildProofTree(Token curr, boolean bool) {
+        String tree;
+        if(bool){
+            tree = "Matched: "+curr.getName() + " : " + "\"" + curr.data + "\" ";
+        }else{
+            tree = "Failed: "+curr.getName() + " : " + "\"" + curr.data + "\" ";
+        }
+        proofTree.append(tree);
+    }
+
+    private static void buildParseTree(Token curr) {
+        String tree;
+            tree = curr.getName() + " : " + "\"" + curr.data + "\" ";
+        
+        parseTree.append(tree);
+    }
+    
+    private static void buildAsTree(Token curr){
+        String node;   
+        Token astHead = null;
+        if(curr.type==Token.TokenType.DocStart || curr.type==Token.TokenType.PigSentenceStart
+                || curr.type==Token.TokenType.WordStart){
+            node = "(";
+            asTree.append(node);
+        }if(curr.type==Token.TokenType.DocEnd || curr.type==Token.TokenType.PigSentenceEnd
+                || curr.type==Token.TokenType.WordEnd){
+            node = ")";
+            asTree.append(node);
+        }if(curr.type==Token.TokenType.PigConst || curr.type==Token.TokenType.PigVowel){
+            node  = "( " + curr.getName() + " : " + curr.getData();
+            asTree.append(node);
+        }
+    }
+
+    public static String getProofTree() {
+        return proofTree.toString();
+    }
+
+    public static String getParseTree() {
+        return parseTree.toString();
+    }
+    
+    public static String getASTree(){
+        return asTree.toString();
+    }
+
+    public static void move() {
+        tmp = curr.getNext();
+        setPrev(curr);
+        setCurr(tmp);
+        lookahead = curr.getNext();
+
+    }
+}
